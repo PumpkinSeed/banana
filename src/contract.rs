@@ -26,12 +26,13 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 pub fn handle<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
-    msg: HandleMsg,
+    _msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
-    match msg {
-        HandleMsg::Increment {} => try_increment(deps, env),
-        HandleMsg::Reset { count } => try_reset(deps, env, count),
-    }
+    try_increment(deps, env)
+    // match msg {
+        // HandleMsg::Increment {} => try_increment(deps, env),
+        // HandleMsg::Reset { count } => try_reset(deps, env, count),
+    // }
 }
 
 pub fn try_increment<S: Storage, A: Api, Q: Querier>(
@@ -64,11 +65,12 @@ pub fn try_reset<S: Storage, A: Api, Q: Querier>(
 
 pub fn query<S: Storage, A: Api, Q: Querier>(
     deps: &Extern<S, A, Q>,
-    msg: QueryMsg,
+    _msg: QueryMsg,
 ) -> StdResult<Binary> {
-    match msg {
-        QueryMsg::GetCount {} => to_binary(&query_count(deps)?),
-    }
+    to_binary(&query_count(deps)?)
+    // match msg {
+        // QueryMsg::GetCount {} => to_binary(&query_count(deps)?),
+    // }
 }
 
 fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
