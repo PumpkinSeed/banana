@@ -1,29 +1,28 @@
-use cosmwasm_std::{
-    to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, StdError,
-    StdResult, Storage,
-};
+use cosmwasm_std::{Api, Env, Extern, HandleResponse, Querier, StdResult, Storage};
 
-use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
-use crate::state::{config, config_read, State};
+use crate::msg::HandleMsg;
+use crate::state::config;
 
 pub fn handle<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
     _msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
-    try_open_account(deps, env)
+    try_deposit(deps, env)
     // match msg {
     // HandleMsg::Increment {} => try_increment(deps, env),
     // HandleMsg::Reset { count } => try_reset(deps, env, count),
     // }
 }
 
-pub fn try_open_account<S: Storage, A: Api, Q: Querier>(
+pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
-    _env: Env,
+    env: Env,
 ) -> StdResult<HandleResponse> {
     config(&mut deps.storage).update(|mut state| {
         //state.balances.insert();
+        state.count += 1;
+        println!("Lofasz: {}", env.message.sender);    
         Ok(state)
     })?;
     Ok(HandleResponse::default())
@@ -36,8 +35,10 @@ mod tests {
     use cosmwasm_std::coins;
     use cosmwasm_std::testing::{mock_dependencies, mock_env};
 
+    use crate::msg::InitMsg;
+
     #[test]
-    fn increment() {
+    fn deposit() {
         let mut deps = mock_dependencies(20, &coins(2, "token"));
 
         let msg = InitMsg { count: 17 };

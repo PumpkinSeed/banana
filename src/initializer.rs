@@ -1,6 +1,5 @@
 use cosmwasm_std::{Api, Env, Extern, InitResponse, Querier, StdResult, Storage};
-use std::collections::HashMap;
-
+//use serde_json::{Map};
 use crate::msg::InitMsg;
 use crate::state::{config, State};
 
@@ -11,7 +10,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<InitResponse> {
     let state = State {
         count: msg.count,
-        balances: HashMap::new(),
+    //    balances: Map::new(),
         owner: deps.api.canonical_address(&env.message.sender)?,
     };
 
