@@ -1,20 +1,25 @@
 use std::any::type_name;
 use std::convert::TryFrom;
 
-use cosmwasm_std::{Api, CanonicalAddr, HumanAddr, Coin, ReadonlyStorage, StdError, StdResult, Storage, Uint128};
+use cosmwasm_std::{
+    Api, CanonicalAddr, Coin, HumanAddr, ReadonlyStorage, StdError, StdResult, Storage, Uint128,
+};
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 //use serde_json::{Map, Value};
 
-use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton, PrefixedStorage, ReadonlyPrefixedStorage,};
+use cosmwasm_storage::{
+    singleton, singleton_read, PrefixedStorage, ReadonlyPrefixedStorage, ReadonlySingleton,
+    Singleton,
+};
 
 pub static CONFIG_KEY: &[u8] = b"config";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
     pub count: i32,
-//    pub balances: Map<String, Value>,
+    //    pub balances: Map<String, Value>,
     pub owner: CanonicalAddr,
 }
 
@@ -52,7 +57,27 @@ impl<'a, S: ReadonlyStorage> ReadonlyBalances<'a, S> {
 
 pub struct Balances<'a, S: Storage> {
     storage: PrefixedStorage<'a, S>,
+}
+
+impl<'a, S: Storage> Balances<'a, S> {
+    pub fn from_storage(storage: &'a mut S) -> Self {
+        Self {
+            storage: PrefixedStorage::new(PREFIX_BALANCES, storage),
+        }
     }
+
+    fn as_readonly(&self) -> ReadonlyBalancesImpl<PrefixedStorage<S>> {
+        ReadonlyBalancesImpl(&self.storage)
+    }
+
+    pub fn balance(&self, account: &CanonicalAddr) -> u128 {
+        self.as_readonly().account_amount(account)
+    }
+
+    pub fn set_account_balance(&mut self, account: &CanonicalAddr, amount: u128) {
+        self.storage.set(account.as_slice(), &amount.to_be_bytes())
+    }
+}
 
 // -----
 
@@ -69,7 +94,6 @@ impl<'a, S: ReadonlyStorage> ReadonlyBalancesImpl<'a, S> {
     }
 }
 
-
 fn slice_to_u128(data: &[u8]) -> StdResult<u128> {
     match <[u8; 16]>::try_from(data) {
         Ok(bytes) => Ok(u128::from_be_bytes(bytes)),
@@ -78,4 +102,3 @@ fn slice_to_u128(data: &[u8]) -> StdResult<u128> {
         )),
     }
 }
-
