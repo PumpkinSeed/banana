@@ -1,7 +1,7 @@
 use cosmwasm_std::{Api, Env, Extern, HandleResponse, Querier, StdResult, Storage, Uint128, StdError};
 
 use crate::msg::HandleMsg;
-use crate::state::config;
+use crate::state::{config, Balances};
 
 pub fn handle<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -35,7 +35,15 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
 
     let sender_address = deps.api.canonical_address(&env.message.sender)?;
 
-
+    let mut balances = Balances::from_storage(&mut deps.storage);
+    let account_balance = balances.balance(&sender_address);
+    if let Some(account_balance) = account_balance.checked_add(amount) {
+        balances.set_account_balance(&sender_address, account_balance);
+    } else {
+        return Err(StdError::generic_err(
+            "This deposit would overflow your balance"
+        ));
+    }
 
     config(&mut deps.storage).update(|mut state| {
         //state.balances.insert();
