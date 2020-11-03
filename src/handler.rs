@@ -1,4 +1,4 @@
-use cosmwasm_std::{Api, Env, Extern, HandleResponse, Querier, StdResult, Storage};
+use cosmwasm_std::{Api, Env, Extern, HandleResponse, Querier, StdResult, Storage, Uint128, StdError};
 
 use crate::msg::HandleMsg;
 use crate::state::config;
@@ -19,6 +19,24 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
 ) -> StdResult<HandleResponse> {
+    let mut amount = Uint128::zero();
+
+    for coin in &env.message.sent_funds {
+        if coin.denom == "banana" {
+            amount = coin.amount
+        }
+    }
+
+    if amount.is_zero() {
+        return Err(StdError::generic_err("No funds were sent to be deposited"));
+    }
+
+    let amount = amount.u128();
+
+    let sender_address = deps.api.canonical_address(&env.message.sender)?;
+
+
+
     config(&mut deps.storage).update(|mut state| {
         //state.balances.insert();
         state.count += 1;
@@ -41,7 +59,7 @@ mod tests {
     fn deposit() {
         let mut deps = mock_dependencies(20, &coins(2, "token"));
 
-        let msg = InitMsg { count: 17 };
+        let msg = InitMsg::default();
         let env = mock_env("creator", &coins(2, "token"));
         let _res = init(&mut deps, env, msg).unwrap();
 
