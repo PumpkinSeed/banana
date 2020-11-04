@@ -1,7 +1,7 @@
-use cosmwasm_std::{Api, to_binary, Env, Extern, HandleResponse, Querier, StdResult, Storage, Uint128, StdError, HumanAddr, Binary};
+use cosmwasm_std::{Api, to_binary, Extern, Querier, StdResult, Storage, Uint128, HumanAddr, Binary};
 
-use crate::msg::{HandleMsg, QueryAnswer};
-use crate::state::{config, Balances, ReadonlyBalances};
+use crate::msg::{QueryAnswer};
+use crate::state::{ReadonlyBalances};
 
 pub fn balance<S: Storage, A: Api, Q: Querier>(
     deps: &Extern<S, A, Q>,

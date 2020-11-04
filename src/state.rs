@@ -1,9 +1,6 @@
-use std::any::type_name;
 use std::convert::TryFrom;
 
-use cosmwasm_std::{
-    Api, CanonicalAddr, Coin, HumanAddr, ReadonlyStorage, StdError, StdResult, Storage, Uint128,
-};
+use cosmwasm_std::{CanonicalAddr, ReadonlyStorage, StdError, StdResult, Storage};
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

@@ -58,10 +58,11 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
 mod tests {
     use super::*;
     use crate::initializer::init;
-    use cosmwasm_std::coins;
+    use cosmwasm_std::{coins, from_binary};
     use cosmwasm_std::testing::{mock_dependencies, mock_env};
 
-    use crate::msg::InitMsg;
+    use crate::msg::{InitMsg, QueryMsg, QueryAnswer};
+    use crate::querier::{balance};
 
     #[test]
     fn deposit() {
@@ -77,8 +78,8 @@ mod tests {
         let _res = handle(&mut deps, env, msg).unwrap();
 
         // should increase counter by 1
-        // let res = query(&deps, QueryMsg::GetCount {}).unwrap();
-        // let value: CountResponse = from_binary(&res).unwrap();
-        // assert_eq!(18, value.count);
+        let res = balance(&deps, QueryMsg::GetBalances {}).unwrap();
+        let value: QueryAnswer::Balance = from_binary(&res).unwrap();
+        assert_eq!(18, value.count);
     }
 }
