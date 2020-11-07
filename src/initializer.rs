@@ -1,5 +1,4 @@
 use cosmwasm_std::{Api, Env, Extern, InitResponse, Querier, StdError, StdResult, Storage};
-//use serde_json::{Map};
 use crate::msg::InitMsg;
 use crate::state::{config, Balances, State};
 
@@ -27,8 +26,6 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     }
 
     let state = State {
-        count: msg.count,
-        //    balances: Map::new(),
         owner: deps.api.canonical_address(&env.message.sender)?,
     };
 

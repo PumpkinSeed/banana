@@ -1,7 +1,7 @@
 use cosmwasm_std::{Api, Env, Extern, HandleResponse, Querier, StdResult, Storage, Uint128, StdError};
 
 use crate::msg::HandleMsg;
-use crate::state::{config, Balances};
+use crate::state::{Balances};
 
 pub fn handle<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -46,12 +46,6 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
         ));
     }
 
-    config(&mut deps.storage).update(|mut state| {
-        //state.balances.insert();
-        state.count += 1;
-        println!("Lofasz: {}", env.message.sender);    
-        Ok(state)
-    })?;
     Ok(HandleResponse::default())
 }
 
@@ -62,7 +56,7 @@ mod tests {
     use cosmwasm_std::{coins, from_binary, HumanAddr};
     use cosmwasm_std::testing::{mock_dependencies, mock_env};
 
-    use crate::msg::{InitMsg, QueryMsg, QueryAnswer};
+    use crate::msg::{InitMsg, QueryAnswer};
     use crate::querier::{balance};
 
     #[test]
@@ -74,8 +68,8 @@ mod tests {
         let _res = init(&mut deps, env, msg).unwrap();
 
         // anyone can increment
-        let env = mock_env("anyone", &coins(2, "banana"));
-        let msg = HandleMsg::Increment {};
+        let env = mock_env("anyone", &coins(10, "banana"));
+        let msg = HandleMsg::Deposit{amount: 200};
         let _res = handle(&mut deps, env, msg).unwrap();
 
         // should increase counter by 1

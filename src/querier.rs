@@ -1,7 +1,18 @@
 use cosmwasm_std::{Api, to_binary, Extern, Querier, StdResult, Storage, Uint128, HumanAddr, Binary};
 
-use crate::msg::{QueryAnswer};
+use crate::msg::{QueryAnswer, QueryMsg};
 use crate::state::{ReadonlyBalances};
+
+pub fn query<S: Storage, A: Api, Q: Querier>(
+    deps: &Extern<S, A, Q>,
+    msg: QueryMsg,
+) -> StdResult<Binary> {
+    match msg {
+        QueryMsg::GetBalances{addr} => {
+            balance(deps, &deps.api.human_address(&addr).unwrap())
+        }
+    }
+}
 
 pub fn balance<S: Storage, A: Api, Q: Querier>(
     deps: &Extern<S, A, Q>,
