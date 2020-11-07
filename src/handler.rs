@@ -35,6 +35,7 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
 
     let sender_address = deps.api.canonical_address(&env.message.sender)?;
 
+    println!("{}", sender_address);
     let mut balances = Balances::from_storage(&mut deps.storage);
     let account_balance = balances.balance(&sender_address);
     if let Some(account_balance) = account_balance.checked_add(amount) {
@@ -58,7 +59,7 @@ pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
 mod tests {
     use super::*;
     use crate::initializer::init;
-    use cosmwasm_std::{coins, from_binary};
+    use cosmwasm_std::{coins, from_binary, HumanAddr};
     use cosmwasm_std::testing::{mock_dependencies, mock_env};
 
     use crate::msg::{InitMsg, QueryMsg, QueryAnswer};
@@ -66,20 +67,24 @@ mod tests {
 
     #[test]
     fn deposit() {
-        let mut deps = mock_dependencies(20, &coins(2, "token"));
+        let mut deps = mock_dependencies(20, &coins(200, "banana"));
 
         let msg = InitMsg::default();
-        let env = mock_env("creator", &coins(2, "token"));
+        let env = mock_env("creator", &coins(2, "banana"));
         let _res = init(&mut deps, env, msg).unwrap();
 
         // anyone can increment
-        let env = mock_env("anyone", &coins(2, "token"));
+        let env = mock_env("anyone", &coins(2, "banana"));
         let msg = HandleMsg::Increment {};
         let _res = handle(&mut deps, env, msg).unwrap();
 
         // should increase counter by 1
-        let res = balance(&deps, QueryMsg::GetBalances {}).unwrap();
-        let value: QueryAnswer::Balance = from_binary(&res).unwrap();
-        assert_eq!(18, value.count);
+        let res = balance(&deps, &HumanAddr::from("anyone")).unwrap();
+        let value: QueryAnswer = from_binary(&res).unwrap();
+        match value {
+            QueryAnswer::Balance{amount} => {
+                println!("{}", amount);
+            }
+        }
     }
 }
