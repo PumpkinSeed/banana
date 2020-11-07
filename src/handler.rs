@@ -6,9 +6,13 @@ use crate::state::{Balances};
 pub fn handle<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
-    _msg: HandleMsg,
+    msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
-    try_deposit(deps, env)
+    match msg {
+        HandleMsg::Deposit {amount} => try_deposit(deps, env, amount),
+        _ => panic!("not supported HandleMsg"),
+    }
+    // try_deposit(deps, env, msg)
     // match msg {
     // HandleMsg::Increment {} => try_increment(deps, env),
     // HandleMsg::Reset { count } => try_reset(deps, env, count),
@@ -18,27 +22,30 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
 pub fn try_deposit<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
+    amount: i64,
 ) -> StdResult<HandleResponse> {
-    let mut amount = Uint128::zero();
+    let mut sum = Uint128::zero();
+
 
     for coin in &env.message.sent_funds {
         if coin.denom == "banana" {
-            amount = coin.amount
+            sum += Uint128::from(amount as u64); // TODO losing sign of the number
+            sum += coin.amount;
         }
     }
 
-    if amount.is_zero() {
+    if sum.is_zero() {
         return Err(StdError::generic_err("No funds were sent to be deposited"));
     }
 
-    let amount = amount.u128();
+    let sum = sum.u128();
 
     let sender_address = deps.api.canonical_address(&env.message.sender)?;
 
     println!("{}", sender_address);
     let mut balances = Balances::from_storage(&mut deps.storage);
     let account_balance = balances.balance(&sender_address);
-    if let Some(account_balance) = account_balance.checked_add(amount) {
+    if let Some(account_balance) = account_balance.checked_add(sum) {
         balances.set_account_balance(&sender_address, account_balance);
     } else {
         return Err(StdError::generic_err(
